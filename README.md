@@ -6,8 +6,7 @@
 ### Fast. Offline. Beautiful. No distractions.
 ## 📸 Preview
 
-![CodePilot Screenshot](assets/screenshot.png)
----
+![CodePilot UI](./assets/screenshot.png)
 
 ![GitHub stars](https://img.shields.io/github/stars/Nikushhaa/CodePilot?style=for-the-badge)
 ![GitHub forks](https://img.shields.io/github/forks/Nikushhaa/CodePilot?style=for-the-badge)
