@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodePilot — Developer Toolbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">CodePilot</span>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">✕</button>
+    </div>
+
+    <div class="search-wrapper sidebar-search">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="toolSearch" placeholder="Search tools…" autocomplete="off" />
+      <kbd class="search-kbd">⌘K</kbd>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebarNav">
+      <!-- Dynamically populated by JS -->
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+        <span class="theme-icon">🌙</span>
+        <span>Dark Mode</span>
+      </button>
+      <a href="https://github.com/" target="_blank" class="gh-link">★ Star on GitHub</a>
+    </div>
+  </aside>
+
+  <!-- ===== TOPBAR (mobile) ===== -->
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+    <div class="logo logo-sm">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">CodePilot</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="favBtn" title="Favorites">♡</button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main" id="main">
+
+    <!-- Home / Welcome -->
+    <section class="tool-panel active" id="panel-home">
+      <div class="home-hero">
+        <div class="hero-badge">v1.0 · Open Source · Offline</div>
+        <h1 class="hero-title">The Ultimate<br /><span class="accent">Developer Toolbox</span></h1>
+        <p class="hero-sub">50+ tools in one place. No sign-up, no tracking, no internet needed.</p>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-num" id="statTools">0</span><span class="stat-label">Tools</span></div>
+          <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Offline</span></div>
+          <div class="stat"><span class="stat-num">0</span><span class="stat-label">Tracking</span></div>
+        </div>
+      </div>
+      <div class="home-grid" id="homeGrid">
+        <!-- Tool cards dynamically inserted -->
+      </div>
+    </section>
+
+    <!-- ===== JSON FORMATTER ===== -->
+    <section class="tool-panel" id="panel-json">
+      <div class="panel-header">
+        <h2><span class="tool-icon">{ }</span> JSON Formatter</h2>
+        <p class="panel-desc">Validate, format, and minify JSON data with syntax highlighting.</p>
+      </div>
+      <div class="tool-row">
+        <div class="col">
+          <div class="field-label">Input JSON</div>
+          <textarea class="code-area" id="jsonInput" placeholder='{"key": "value", "arr": [1, 2, 3]}'></textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="formatJSON()">Format ✦</button>
+            <button class="btn btn-ghost" onclick="minifyJSON()">Minify</button>
+            <button class="btn btn-ghost" onclick="clearField('jsonInput','jsonOutput','jsonStatus')">Clear</button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="field-label">Output <span class="status-tag" id="jsonStatus"></span></div>
+          <textarea class="code-area" id="jsonOutput" readonly></textarea>
+          <div class="btn-row">
+            <button class="btn btn-copy" onclick="copyField('jsonOutput')">⎘ Copy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== REGEX TESTER ===== -->
+    <section class="tool-panel" id="panel-regex">
+      <div class="panel-header">
+        <h2><span class="tool-icon">.*</span> Regex Tester</h2>
+        <p class="panel-desc">Test regular expressions live with match highlighting.</p>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Pattern</label>
+        <div class="regex-input-row">
+          <span class="regex-slash">/</span>
+          <input type="text" id="regexPattern" class="input-field" placeholder="([a-z]+)\d+" />
+          <span class="regex-slash">/</span>
+          <input type="text" id="regexFlags" class="input-field flags-field" placeholder="gi" maxlength="6" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Test String</label>
+        <textarea class="code-area" id="regexInput" placeholder="Paste your test string here…" rows="6"></textarea>
+      </div>
+      <div class="regex-results">
+        <div class="field-label">Result <span class="status-tag" id="regexStatus"></span></div>
+        <div class="highlight-box" id="regexHighlight"></div>
+        <div class="matches-list" id="matchesList"></div>
+      </div>
+    </section>
+
+    <!-- ===== BASE64 ===== -->
+    <section class="tool-panel" id="panel-base64">
+      <div class="panel-header">
+        <h2><span class="tool-icon">64</span> Base64 Encode / Decode</h2>
+        <p class="panel-desc">Convert text or data to and from Base64 encoding.</p>
+      </div>
+      <div class="tool-row">
+        <div class="col">
+          <div class="field-label">Input</div>
+          <textarea class="code-area" id="b64Input" placeholder="Enter text or Base64 string…"></textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="encodeBase64()">Encode →</button>
+            <button class="btn btn-primary" onclick="decodeBase64()">← Decode</button>
+            <button class="btn btn-ghost" onclick="clearField('b64Input','b64Output')">Clear</button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="field-label">Output</div>
+          <textarea class="code-area" id="b64Output" readonly></textarea>
+          <div class="btn-row">
+            <button class="btn btn-copy" onclick="copyField('b64Output')">⎘ Copy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PASSWORD GENERATOR ===== -->
+    <section class="tool-panel" id="panel-password">
+      <div class="panel-header">
+        <h2><span class="tool-icon">🔑</span> Password Generator</h2>
+        <p class="panel-desc">Generate cryptographically secure random passwords.</p>
+      </div>
+      <div class="password-display-wrap">
+        <div class="password-display" id="passwordDisplay">Click Generate</div>
+        <button class="btn btn-copy icon-only" onclick="copyField('passwordDisplay')" title="Copy">⎘</button>
+      </div>
+      <div class="options-grid">
+        <div class="option-row">
+          <label>Length: <strong id="pwLenLabel">16</strong></label>
+          <input type="range" id="pwLength" min="4" max="128" value="16" oninput="document.getElementById('pwLenLabel').textContent=this.value" />
+        </div>
+        <div class="option-row checkboxes">
+          <label><input type="checkbox" id="pwUpper" checked /> Uppercase (A-Z)</label>
+          <label><input type="checkbox" id="pwLower" checked /> Lowercase (a-z)</label>
+          <label><input type="checkbox" id="pwNum" checked /> Numbers (0-9)</label>
+          <label><input type="checkbox" id="pwSym" checked /> Symbols (!@#…)</label>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generatePassword()">⚡ Generate</button>
+        <button class="btn btn-ghost" onclick="generatePasswordBulk()">Bulk × 10</button>
+      </div>
+      <div class="code-area" id="bulkPasswords" style="display:none; margin-top:1rem;"></div>
+    </section>
+
+    <!-- ===== UUID GENERATOR ===== -->
+    <section class="tool-panel" id="panel-uuid">
+      <div class="panel-header">
+        <h2><span class="tool-icon">⬡</span> UUID Generator</h2>
+        <p class="panel-desc">Generate RFC 4122 compliant UUIDs (v4).</p>
+      </div>
+      <div class="uuid-display" id="uuidDisplay">—</div>
+      <div class="btn-row" style="margin-top:1rem;">
+        <button class="btn btn-primary" onclick="generateUUID()">Generate UUID</button>
+        <button class="btn btn-ghost" onclick="generateUUIDBulk()">Bulk × 10</button>
+        <button class="btn btn-copy" onclick="copyField('uuidDisplay')">⎘ Copy</button>
+      </div>
+      <div class="code-area monospace" id="uuidBulk" style="display:none; margin-top:1rem;"></div>
+    </section>
+
+    <!-- ===== TIMESTAMP CONVERTER ===== -->
+    <section class="tool-panel" id="panel-timestamp">
+      <div class="panel-header">
+        <h2><span class="tool-icon">⏱</span> Timestamp Converter</h2>
+        <p class="panel-desc">Convert Unix timestamps to human-readable dates and vice versa.</p>
+      </div>
+      <div class="ts-now">
+        <span class="field-label">Current Unix Timestamp:</span>
+        <span class="ts-live" id="tsLive">—</span>
+        <button class="btn btn-copy sm" onclick="copyText(document.getElementById('tsLive').textContent)">⎘</button>
+      </div>
+      <div class="tool-row">
+        <div class="col">
+          <label class="field-label">Unix Timestamp → Date</label>
+          <input type="number" id="tsToDate" class="input-field" placeholder="e.g. 1700000000" />
+          <button class="btn btn-primary" style="margin-top:.5rem" onclick="convertTsToDate()">Convert</button>
+          <div class="output-box" id="tsDateResult"></div>
+        </div>
+        <div class="col">
+          <label class="field-label">Date → Unix Timestamp</label>
+          <input type="datetime-local" id="dateToTs" class="input-field" />
+          <button class="btn btn-primary" style="margin-top:.5rem" onclick="convertDateToTs()">Convert</button>
+          <div class="output-box" id="tsResult"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== COLOR CONVERTER ===== -->
+    <section class="tool-panel" id="panel-color">
+      <div class="panel-header">
+        <h2><span class="tool-icon">🎨</span> Color Converter</h2>
+        <p class="panel-desc">Convert between HEX, RGB, HSL, and more. Pick any color.</p>
+      </div>
+      <div class="color-picker-wrap">
+        <input type="color" id="colorPicker" value="#58a6ff" oninput="colorPickerInput()" />
+        <div class="color-preview" id="colorPreview" style="background:#58a6ff;"></div>
+      </div>
+      <div class="color-outputs" id="colorOutputs">
+        <div class="color-row"><span class="color-fmt">HEX</span><span class="color-val" id="hexVal">#58a6ff</span><button class="btn btn-copy sm" onclick="copyText(document.getElementById('hexVal').textContent)">⎘</button></div>
+        <div class="color-row"><span class="color-fmt">RGB</span><span class="color-val" id="rgbVal">rgb(88, 166, 255)</span><button class="btn btn-copy sm" onclick="copyText(document.getElementById('rgbVal').textContent)">⎘</button></div>
+        <div class="color-row"><span class="color-fmt">HSL</span><span class="color-val" id="hslVal">hsl(213, 100%, 67%)</span><button class="btn btn-copy sm" onclick="copyText(document.getElementById('hslVal').textContent)">⎘</button></div>
+        <div class="color-row"><span class="color-fmt">CSS</span><span class="color-val" id="cssVal">color: #58a6ff;</span><button class="btn btn-copy sm" onclick="copyText(document.getElementById('cssVal').textContent)">⎘</button></div>
+      </div>
+      <div class="field-group" style="margin-top:1.5rem">
+        <label class="field-label">Enter HEX or RGB manually</label>
+        <div class="btn-row">
+          <input type="text" id="colorManual" class="input-field" placeholder="#58a6ff or rgb(88,166,255)" />
+          <button class="btn btn-primary" onclick="parseColorManual()">Parse</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MARKDOWN PREVIEW ===== -->
+    <section class="tool-panel" id="panel-markdown">
+      <div class="panel-header">
+        <h2><span class="tool-icon">Md</span> Markdown Preview</h2>
+        <p class="panel-desc">Write Markdown on the left, see the rendered preview on the right.</p>
+      </div>
+      <div class="tool-row md-row">
+        <div class="col">
+          <div class="field-label">Markdown Input</div>
+          <textarea class="code-area md-input" id="mdInput" placeholder="# Hello World&#10;&#10;Write **bold**, *italic*, `code`…" oninput="renderMarkdown()"></textarea>
+        </div>
+        <div class="col">
+          <div class="field-label">Preview</div>
+          <div class="md-preview" id="mdPreview"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TEXT CASE CONVERTER ===== -->
+    <section class="tool-panel" id="panel-textcase">
+      <div class="panel-header">
+        <h2><span class="tool-icon">Aa</span> Text Case Converter</h2>
+        <p class="panel-desc">Convert text between camelCase, snake_case, PascalCase, and more.</p>
+      </div>
+      <textarea class="code-area" id="caseInput" placeholder="Type or paste your text here…" rows="5" oninput="updateAllCases()"></textarea>
+      <div class="case-grid" id="caseGrid">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- ===== URL ENCODER ===== -->
+    <section class="tool-panel" id="panel-url">
+      <div class="panel-header">
+        <h2><span class="tool-icon">🔗</span> URL Encoder / Decoder</h2>
+        <p class="panel-desc">Encode and decode URLs and URI components.</p>
+      </div>
+      <div class="tool-row">
+        <div class="col">
+          <div class="field-label">Input</div>
+          <textarea class="code-area" id="urlInput" placeholder="https://example.com/search?q=hello world&lang=en"></textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="encodeURL()">Encode →</button>
+            <button class="btn btn-primary" onclick="decodeURL()">← Decode</button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="field-label">Output</div>
+          <textarea class="code-area" id="urlOutput" readonly></textarea>
+          <div class="btn-row">
+            <button class="btn btn-copy" onclick="copyField('urlOutput')">⎘ Copy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HASH GENERATOR ===== -->
+    <section class="tool-panel" id="panel-hash">
+      <div class="panel-header">
+        <h2><span class="tool-icon">#</span> Hash Generator</h2>
+        <p class="panel-desc">Generate MD5, SHA-1, SHA-256, SHA-512 hashes using the Web Crypto API.</p>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Input Text</label>
+        <textarea class="code-area" id="hashInput" placeholder="Enter text to hash…" rows="4"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generateHashes()">Generate Hashes</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('hashInput').value='';clearHashes()">Clear</button>
+      </div>
+      <div class="hash-results" id="hashResults"></div>
+    </section>
+
+    <!-- ===== CALCULATOR ===== -->
+    <section class="tool-panel" id="panel-calc">
+      <div class="panel-header">
+        <h2><span class="tool-icon">∑</span> Calculator</h2>
+        <p class="panel-desc">A powerful expression calculator. Supports math functions and history.</p>
+      </div>
+      <div class="calc-wrap">
+        <div class="calc-display">
+          <div class="calc-expr" id="calcExpr"></div>
+          <div class="calc-result" id="calcResult">0</div>
+        </div>
+        <div class="calc-grid">
+          <button class="calc-btn span2" onclick="calcInput('AC')">AC</button>
+          <button class="calc-btn" onclick="calcInput('⌫')">⌫</button>
+          <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+          <button class="calc-btn" onclick="calcInput('7')">7</button>
+          <button class="calc-btn" onclick="calcInput('8')">8</button>
+          <button class="calc-btn" onclick="calcInput('9')">9</button>
+          <button class="calc-btn op" onclick="calcInput('*')">×</button>
+          <button class="calc-btn" onclick="calcInput('4')">4</button>
+          <button class="calc-btn" onclick="calcInput('5')">5</button>
+          <button class="calc-btn" onclick="calcInput('6')">6</button>
+          <button class="calc-btn op" onclick="calcInput('-')">−</button>
+          <button class="calc-btn" onclick="calcInput('1')">1</button>
+          <button class="calc-btn" onclick="calcInput('2')">2</button>
+          <button class="calc-btn" onclick="calcInput('3')">3</button>
+          <button class="calc-btn op" onclick="calcInput('+')">+</button>
+          <button class="calc-btn" onclick="calcInput('0')">0</button>
+          <button class="calc-btn" onclick="calcInput('.')">.</button>
+          <button class="calc-btn" onclick="calcInput('(')">( </button>
+          <button class="calc-btn" onclick="calcInput(')')"> )</button>
+          <button class="calc-btn eq span4" onclick="calcInput('=')">=</button>
+        </div>
+        <div class="calc-history" id="calcHistory"></div>
+      </div>
+    </section>
+
+    <!-- ===== LOREM IPSUM ===== -->
+    <section class="tool-panel" id="panel-lorem">
+      <div class="panel-header">
+        <h2><span class="tool-icon">¶</span> Lorem Ipsum Generator</h2>
+        <p class="panel-desc">Generate placeholder text for mockups and designs.</p>
+      </div>
+      <div class="options-grid">
+        <div class="option-row">
+          <label>Type</label>
+          <select id="loremType" class="select-field">
+            <option value="words">Words</option>
+            <option value="sentences" selected>Sentences</option>
+            <option value="paragraphs">Paragraphs</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label>Count: <strong id="loremCountLabel">5</strong></label>
+          <input type="range" id="loremCount" min="1" max="50" value="5" oninput="document.getElementById('loremCountLabel').textContent=this.value" />
+        </div>
+        <div class="option-row">
+          <label><input type="checkbox" id="loremClassic" checked /> Start with "Lorem ipsum…"</label>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generateLorem()">Generate</button>
+        <button class="btn btn-copy" onclick="copyField('loremOutput')">⎘ Copy</button>
+      </div>
+      <div class="code-area" id="loremOutput" style="margin-top:1rem; min-height:120px;"></div>
+    </section>
+
+    <!-- ===== CODE MINIFIER ===== -->
+    <section class="tool-panel" id="panel-minifier">
+      <div class="panel-header">
+        <h2><span class="tool-icon">⚙</span> Code Minifier</h2>
+        <p class="panel-desc">Minify JavaScript and CSS code. Removes whitespace and comments.</p>
+      </div>
+      <div class="btn-row" style="margin-bottom:1rem;">
+        <button class="btn btn-ghost active-tab" id="tabJS" onclick="setMinifyTab('js')">JavaScript</button>
+        <button class="btn btn-ghost" id="tabCSS" onclick="setMinifyTab('css')">CSS</button>
+      </div>
+      <div class="tool-row">
+        <div class="col">
+          <div class="field-label">Input</div>
+          <textarea class="code-area" id="minifyInput" placeholder="Paste your code here…" rows="12"></textarea>
+        </div>
+        <div class="col">
+          <div class="field-label">Minified Output <span class="status-tag" id="minifyStatus"></span></div>
+          <textarea class="code-area" id="minifyOutput" readonly rows="12"></textarea>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="minifyCode()">⚡ Minify</button>
+        <button class="btn btn-copy" onclick="copyField('minifyOutput')">⎘ Copy</button>
+      </div>
+    </section>
+
+    <!-- ===== NOTES / SNIPPETS ===== -->
+    <section class="tool-panel" id="panel-notes">
+      <div class="panel-header">
+        <h2><span class="tool-icon">📝</span> Notes & Snippets</h2>
+        <p class="panel-desc">Save code snippets and notes locally. Persisted in localStorage.</p>
+      </div>
+      <div class="notes-layout">
+        <div class="notes-sidebar">
+          <button class="btn btn-primary w-full" onclick="newNote()">+ New Note</button>
+          <div class="notes-list" id="notesList"></div>
+        </div>
+        <div class="notes-editor">
+          <input type="text" id="noteTitle" class="input-field note-title" placeholder="Note title…" />
+          <textarea class="code-area note-body" id="noteBody" placeholder="Start writing…"></textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveNote()">Save</button>
+            <button class="btn btn-danger" onclick="deleteNote()">Delete</button>
+            <button class="btn btn-copy" onclick="copyField('noteBody')">⎘ Copy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DIFF CHECKER ===== -->
+    <section class="tool-panel" id="panel-diff">
+      <div class="panel-header">
+        <h2><span class="tool-icon">≠</span> Text Diff Checker</h2>
+        <p class="panel-desc">Compare two texts and highlight the differences line by line.</p>
+      </div>
+      <div class="tool-row">
+        <div class="col">
+          <div class="field-label">Original</div>
+          <textarea class="code-area" id="diffA" rows="10" placeholder="Original text…"></textarea>
+        </div>
+        <div class="col">
+          <div class="field-label">Modified</div>
+          <textarea class="code-area" id="diffB" rows="10" placeholder="Modified text…"></textarea>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="runDiff()">Compare</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('diffA').value='';document.getElementById('diffB').value='';document.getElementById('diffOutput').innerHTML='';">Clear</button>
+      </div>
+      <div class="diff-output" id="diffOutput"></div>
+    </section>
+
+    <!-- ===== NUMBER BASE CONVERTER ===== -->
+    <section class="tool-panel" id="panel-numbase">
+      <div class="panel-header">
+        <h2><span class="tool-icon">01</span> Number Base Converter</h2>
+        <p class="panel-desc">Convert numbers between Binary, Octal, Decimal, and Hexadecimal.</p>
+      </div>
+      <div class="base-grid" id="baseGrid">
+        <div class="base-row"><span class="base-label">DEC (10)</span><input type="text" id="baseDec" class="input-field" placeholder="255" oninput="convertBase('dec')" /></div>
+        <div class="base-row"><span class="base-label">BIN (2)</span><input type="text" id="baseBin" class="input-field" placeholder="11111111" oninput="convertBase('bin')" /></div>
+        <div class="base-row"><span class="base-label">OCT (8)</span><input type="text" id="baseOct" class="input-field" placeholder="377" oninput="convertBase('oct')" /></div>
+        <div class="base-row"><span class="base-label">HEX (16)</span><input type="text" id="baseHex" class="input-field" placeholder="FF" oninput="convertBase('hex')" /></div>
+      </div>
+    </section>
+
+    <!-- ===== WORD COUNTER ===== -->
+    <section class="tool-panel" id="panel-wordcount">
+      <div class="panel-header">
+        <h2><span class="tool-icon">Wc</span> Word Counter</h2>
+        <p class="panel-desc">Count words, characters, sentences, and estimate reading time.</p>
+      </div>
+      <textarea class="code-area" id="wcInput" placeholder="Paste or type your text here…" rows="10" oninput="updateWordCount()"></textarea>
+      <div class="stats-row" id="wcStats">
+        <div class="stat-box"><span id="wcWords">0</span><span>Words</span></div>
+        <div class="stat-box"><span id="wcChars">0</span><span>Characters</span></div>
+        <div class="stat-box"><span id="wcCharsNoSp">0</span><span>No Spaces</span></div>
+        <div class="stat-box"><span id="wcLines">0</span><span>Lines</span></div>
+        <div class="stat-box"><span id="wcSentences">0</span><span>Sentences</span></div>
+        <div class="stat-box"><span id="wcRead">0 min</span><span>Read Time</span></div>
+      </div>
+    </section>
+
+    <!-- ===== JWT DECODER ===== -->
+    <section class="tool-panel" id="panel-jwt">
+      <div class="panel-header">
+        <h2><span class="tool-icon">🔓</span> JWT Decoder</h2>
+        <p class="panel-desc">Decode and inspect JSON Web Tokens without verifying the signature.</p>
+      </div>
+      <textarea class="code-area" id="jwtInput" placeholder="Paste your JWT token here…" rows="4" oninput="decodeJWT()"></textarea>
+      <div class="jwt-parts" id="jwtParts">
+        <div class="jwt-part">
+          <div class="field-label jwt-header-label">Header</div>
+          <div class="code-area jwt-output" id="jwtHeader">—</div>
+        </div>
+        <div class="jwt-part">
+          <div class="field-label jwt-payload-label">Payload</div>
+          <div class="code-area jwt-output" id="jwtPayload">—</div>
+        </div>
+        <div class="jwt-part">
+          <div class="field-label">Signature</div>
+          <div class="code-area jwt-output" id="jwtSig">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HTML ENTITY ENCODER ===== -->
+    <section class="tool-panel" id="panel-htmlentity">
+      <div class="panel-header">
+        <h2><span class="tool-icon">&amp;</span> HTML Entity Encoder</h2>
+        <p class="panel-desc">Encode and decode HTML entities in text.</p>
+      </div>
+      <div class="tool-row">
+        <div class="col">
+          <div class="field-label">Input</div>
+          <textarea class="code-area" id="htmlEntityInput" placeholder="<div class=&quot;hello&quot;>World & more</div>"></textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="encodeHTMLEntities()">Encode →</button>
+            <button class="btn btn-primary" onclick="decodeHTMLEntities()">← Decode</button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="field-label">Output</div>
+          <textarea class="code-area" id="htmlEntityOutput" readonly></textarea>
+          <div class="btn-row">
+            <button class="btn btn-copy" onclick="copyField('htmlEntityOutput')">⎘ Copy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CRON EXPRESSION ===== -->
+    <section class="tool-panel" id="panel-cron">
+      <div class="panel-header">
+        <h2><span class="tool-icon">⏲</span> Cron Expression Parser</h2>
+        <p class="panel-desc">Decode cron expressions into human-readable schedules.</p>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Cron Expression</label>
+        <input type="text" id="cronInput" class="input-field" placeholder="* * * * *" oninput="parseCron()" />
+      </div>
+      <div class="output-box" id="cronResult" style="margin-top:1rem;"></div>
+      <div class="cron-parts" id="cronParts"></div>
+    </section>
+
+    <!-- ===== CSS GRADIENT GENERATOR ===== -->
+    <section class="tool-panel" id="panel-gradient">
+      <div class="panel-header">
+        <h2><span class="tool-icon">▦</span> CSS Gradient Generator</h2>
+        <p class="panel-desc">Build beautiful CSS gradients visually with a live preview.</p>
+      </div>
+      <div class="gradient-preview" id="gradientPreview"></div>
+      <div class="gradient-controls">
+        <div class="option-row">
+          <label>Type</label>
+          <select id="gradType" class="select-field" onchange="updateGradient()">
+            <option value="linear">Linear</option>
+            <option value="radial">Radial</option>
+            <option value="conic">Conic</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label>Direction</label>
+          <select id="gradDir" class="select-field" onchange="updateGradient()">
+            <option value="to right">→ Right</option>
+            <option value="to bottom">↓ Down</option>
+            <option value="to bottom right">↘ Diagonal</option>
+            <option value="135deg">135°</option>
+            <option value="45deg">45°</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label>Color 1</label>
+          <input type="color" id="gradColor1" value="#58a6ff" oninput="updateGradient()" />
+        </div>
+        <div class="option-row">
+          <label>Color 2</label>
+          <input type="color" id="gradColor2" value="#3fb950" oninput="updateGradient()" />
+        </div>
+      </div>
+      <div class="code-area" id="gradientCode" style="margin-top:1rem;"></div>
+      <div class="btn-row" style="margin-top:.5rem;">
+        <button class="btn btn-copy" onclick="copyField('gradientCode')">⎘ Copy CSS</button>
+      </div>
+    </section>
+
+    <!-- ===== CHAR MAP ===== -->
+    <section class="tool-panel" id="panel-charmap">
+      <div class="panel-header">
+        <h2><span class="tool-icon">⌨</span> Character Map</h2>
+        <p class="panel-desc">Browse and copy special characters, symbols, and emoji.</p>
+      </div>
+      <div class="char-categories" id="charCategories"></div>
+      <div class="char-grid" id="charGrid"></div>
+      <div class="char-selected" id="charSelected">Click a character to select</div>
+    </section>
+
+    <!-- ===== STRING INSPECTOR ===== -->
+    <section class="tool-panel" id="panel-string">
+      <div class="panel-header">
+        <h2><span class="tool-icon">🔍</span> String Inspector</h2>
+        <p class="panel-desc">Inspect and transform strings: reverse, escape, split, and more.</p>
+      </div>
+      <textarea class="code-area" id="stringInput" placeholder="Type or paste string here…" rows="4" oninput="inspectString()"></textarea>
+      <div class="transform-btns" id="transformBtns">
+        <button class="btn btn-ghost sm" onclick="transformString('reverse')">Reverse</button>
+        <button class="btn btn-ghost sm" onclick="transformString('escape')">JS Escape</button>
+        <button class="btn btn-ghost sm" onclick="transformString('unescape')">Unescape</button>
+        <button class="btn btn-ghost sm" onclick="transformString('rot13')">ROT13</button>
+        <button class="btn btn-ghost sm" onclick="transformString('trim')">Trim</button>
+        <button class="btn btn-ghost sm" onclick="transformString('removeDups')">Remove Dups</button>
+        <button class="btn btn-ghost sm" onclick="transformString('sortLines')">Sort Lines</button>
+        <button class="btn btn-ghost sm" onclick="transformString('dedupLines')">Dedup Lines</button>
+      </div>
+      <div class="code-area" id="stringOutput" style="margin-top:1rem; min-height:80px;"></div>
+      <div class="stats-row" id="stringStats" style="margin-top:.75rem;"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== OVERLAY ===== -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- ===== TOAST ===== -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
