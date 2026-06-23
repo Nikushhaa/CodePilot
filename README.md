@@ -4,7 +4,9 @@
 
 ### The ultimate open-source developer toolbox  
 ### Fast. Offline. Beautiful. No distractions.
+## 📸 Preview
 
+![CodePilot Screenshot](assets/screenshot.png)
 ---
 
 ![GitHub stars](https://img.shields.io/github/stars/Nikushhaa/CodePilot?style=for-the-badge)
